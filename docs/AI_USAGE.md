@@ -13,7 +13,7 @@ step was checked by running the code.
 | Pay types `REGULAR` / `INCENTIVE` / `STIPEND`; month-on-month pay; incentives for sales | `PayType` / `CompensationPolicy` encoding those rules, with tests |
 | Leave rules: applied sick and casual leave are paid, unplanned leave is loss of pay; checked on the second-last working day | `LeaveSummary`, `WeekdayCalendar`, `PayrollCalculator`, with worked-example tests |
 | Flat 5% tax for now | Configurable `TaxPolicy` |
-| TDD, seed 10k employees, scalability, no duplicated logic | Pure rule classes, an event for cross-module updates, a lookup interface to avoid package cycles, a JDBC batch seeder |
+| TDD, seed 10k employees, scalability, no duplicated logic | Pure rule classes, an event so services react to profile changes without coupling, a JDBC batch seeder |
 | Keep an assumptions artifact; review all code before committing | `docs/ASSUMPTIONS.md` and the other docs; incremental commits after review |
 
 ## The main prompt (verbatim)
@@ -50,6 +50,10 @@ Follow-up prompts during review:
 
 > auditing must follow AOP
 
+> Can we have the mvc architecture be followed where the dao is used for queries and storing jpa repository,
+> controller layer for controllers, model having all necessary models, i need these things structured and
+> if possible angular be in the view
+
 The assessment brief was given as extra context (multi-country org, one-page requirements doc,
 commit artifacts, incremental commits).
 
@@ -62,7 +66,11 @@ commit artifacts, incremental commits).
 ## Design corrections from review
 
 - **Leave pools weren't extensible.** Asked about adding a leave pool, the agent admitted that the first design (three fixed leave columns) needed changes in five places. It refactored leave to `LeaveType` with a `paid` flag, stored as rows (migration V3), so a pool is now one enum constant.
-- **Audit moved from events to AOP.** The first audit draft had services publish audit events. On review I asked for AOP, so it became `@Audited` + `AuditAspect` with per-feature snapshots, and services have no audit code at all.
+- **Audit moved from events to AOP.** The first audit draft had services publish audit events. On review I asked for AOP, so it became `@Audited` + `AuditAspect` with per-area snapshots, and services have no audit code at all.
+
+- **Package-by-feature → layered MVC.** The first structure grouped code by feature. On review I asked for MVC layers (`controller` / `service` / `dao` / `model`, with Angular as the View). The agent moved the classes with a script and pulled DTOs out of controllers into `model.dto`. It also added an ArchUnit test that enforces the layering, and that test then caught two real violations:
+  - `EmployeeController` handled entities directly. Fixed with `EmployeeDirectoryService`.
+  - An `aspect` ↔ `service` package cycle. Fixed by moving the audit interfaces into `aspect`.
 
 ## Mistakes caught along the way
 

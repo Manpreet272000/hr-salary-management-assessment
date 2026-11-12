@@ -63,7 +63,7 @@ docker run -p 8080:8080 -v acme-hr-data:/data acme-hr
 ## Tests
 
 ```bash
-cd backend && mvn test           # 97 tests: unit (pay rules) + API tests on a temporary SQLite DB
+cd backend && mvn test           # 101 tests: unit (rules), API tests on a temporary SQLite DB, architecture rules
 cd frontend && npx ng test --watch=false   # 17 tests
 ```
 
@@ -71,21 +71,30 @@ Backend tests use a fixed clock (2026-11-11), so month and working-day maths is 
 
 ## Project layout
 
+MVC: Angular is the View, Spring controllers are the Controller, and `model` (backed by services and
+DAOs) is the Model. The backend layering is enforced by an ArchUnit test.
+
 ```
 backend/src/main/java/com/acme/hr/
-  employee/       directory, profile, active status, reporting hierarchy + rules
-  compensation/   pay components, eligibility policy, history
-  attendance/     monthly leave per leave type, working-day calendar, payroll cutoff
-  audit/          @Audited aspect, snapshots, append-only audit log
-  payroll/        pure pay calculator, tax policy, monthly estimate
-  insights/       aggregate SQL for pay and headcount
-  meta/           enum reference data for the UI
-  seed/           deterministic 10k-employee generator
-  common/         errors, money, auditing, SPA serving
-backend/src/main/resources/db/migration/   Flyway schema
-frontend/src/app/
-  core/           API client, models, formatting, error interceptor
-  employees/      directory, detail, reporting, pay, estimate and activity panels
-  insights/       pay insights page
+  controller/     REST endpoints only (delegate to one service, return DTOs)
+  service/        business logic + transactions
+    policy/       compensation and reporting rules (strategy beans)
+    payroll/      pure pay calculator, tax policy
+    calendar/     working days, payroll cutoff
+    audit/        audit snapshots of profile, status, manager, pay, leave
+  dao/            all queries and storage: JPA repositories, specifications, aggregate SQL, bulk inserts
+  model/
+    entity/       JPA entities
+    dto/          request/response records and value objects
+    enums/        departments, countries, pay and leave types, …
+    event/        domain events
+  aspect/         @Audited + AuditAspect (cross-cutting audit)
+  config/  exception/  util/  seed/
+backend/src/main/resources/db/migration/   Flyway schema (V1–V4)
+frontend/src/app/                          the View layer
+  models/         TypeScript interfaces mirroring model/dto
+  services/       one HTTP service per backend controller, error interceptor
+  views/          employees/ (list, detail and its panels), insights/
+  shared/         pipes and helpers
 docs/             requirements, assumptions, architecture, AI usage
 ```

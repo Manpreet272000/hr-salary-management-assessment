@@ -41,7 +41,7 @@ live data.
 | Currency conversion / org-wide totals in one currency | FX rates change daily and would need a source of truth. Mixing currencies silently is worse than showing per-currency figures. |
 | Leave approval workflow, daily attendance | We record the month's leave counts that payroll needs. Leave management is a separate product. |
 | Public holiday calendars | Working days are Mon–Fri. `WorkingDayCalendar` is the extension point for per-country holidays. |
-| Authentication and roles | Single persona (HR Manager), assessment scope. In production this would sit behind company SSO. The audit trail already records an actor, and `CurrentActor` is where the logged-in user plugs in. |
+| Authentication and roles | Single persona (HR Manager), assessment scope. Planned as future scope: SSO (OIDC) plus role- and scope-based access control. See *Future scope* in ARCHITECTURE.md. The audit trail already records an actor, and `CurrentActor` is where the logged-in user plugs in. |
 | Leave balances / quotas per leave type | Leave types are extensible, but allowances, carry-over and approvals are a leave-management product. |
 | Matrix / dotted-line reporting | One solid line per person covers payroll and approvals. Dotted lines would be a separate relation. |
 | Back-dated / future-dated pay changes, bulk edits, CSV import/export | Useful, but each adds rules (overlaps, approvals, validation reports) beyond a v1. Pay changes take effect today. |
