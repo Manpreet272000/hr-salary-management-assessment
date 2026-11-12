@@ -55,6 +55,7 @@ class DataSeeder implements ApplicationRunner {
         ZoneId zone = clock.getZone();
         List<Object[]> employeeRows = new ArrayList<>(employees.size());
         List<Object[]> payRows = new ArrayList<>();
+        List<Object[]> managerRows = new ArrayList<>();
         // The table is empty, so ids are assigned explicitly (1..n) and reused as salary foreign keys.
         for (int i = 0; i < employees.size(); i++) {
             long id = i + 1L;
@@ -63,6 +64,9 @@ class DataSeeder implements ApplicationRunner {
             employeeRows.add(new Object[] {
                 id, e.profile().fullName(), e.profile().jobTitle(), e.profile().department().name(),
                 e.profile().employmentType().name(), e.profile().country().name(), e.active(), joined, joined});
+            if (e.managerIndex() != null) {
+                managerRows.add(new Object[] {e.managerIndex() + 1L, id});
+            }
             e.pay().forEach((payType, amount) -> payRows.add(new Object[] {
                 id, payType.name(), amount, e.profile().country().currency(), Date.valueOf(e.joinedOn()), joined, joined}));
         }
@@ -72,5 +76,7 @@ class DataSeeder implements ApplicationRunner {
         jdbc.batchUpdate("""
                 INSERT INTO salary_component (employee_id, pay_type, amount, currency, effective_from, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)""", payRows);
+        // Set after all rows exist, since a manager may have a higher id than their report.
+        jdbc.batchUpdate("UPDATE employee SET manager_id = ? WHERE id = ?", managerRows);
     }
 }

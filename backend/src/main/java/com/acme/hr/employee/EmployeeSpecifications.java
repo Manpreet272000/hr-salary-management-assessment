@@ -22,7 +22,7 @@ final class EmployeeSpecifications {
     }
 
     /** Matches an employee code exactly, otherwise a case-insensitive substring of name or job title. */
-    private static Specification<Employee> textQuery(String query) {
+    static Specification<Employee> textQuery(String query) {
         if (query == null || query.isBlank()) {
             return null;
         }

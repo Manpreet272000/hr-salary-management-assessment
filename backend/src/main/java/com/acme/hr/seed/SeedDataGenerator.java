@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,55 @@ final class SeedDataGenerator {
         for (int i = 0; i < count; i++) {
             result.add(next());
         }
+        for (Department department : Department.values()) {
+            assignManagers(result, department);
+        }
         return result;
+    }
+
+    /**
+     * Builds a department's tree with the same constraints the app enforces: managers are active FTEs
+     * in the same department. The most senior one heads the department; other principals report to the
+     * head, leads report to a principal, and everyone else reports to a lead.
+     */
+    private void assignManagers(List<SeedEmployee> employees, Department department) {
+        List<Integer> members = new ArrayList<>();
+        for (int i = 0; i < employees.size(); i++) {
+            if (employees.get(i).profile().department() == department) {
+                members.add(i);
+            }
+        }
+        List<Integer> eligible = members.stream().filter(i -> employees.get(i).canManage()).toList();
+        if (eligible.isEmpty()) {
+            return;
+        }
+        int head = eligible.stream().max(Comparator.comparingInt(i -> employees.get(i).level())).orElseThrow();
+        List<Integer> principals = atLevel(employees, eligible, 4, head);
+        List<Integer> leads = atLevel(employees, eligible, 3, head);
+        List<Integer> principalsAndHead = principals.isEmpty() ? List.of(head) : principals;
+        List<Integer> teamManagers = leads.isEmpty() ? principalsAndHead : leads;
+
+        for (int member : members) {
+            Integer manager;
+            if (member == head) {
+                manager = null;
+            } else if (principals.contains(member)) {
+                manager = head;
+            } else if (leads.contains(member)) {
+                manager = pickOne(principalsAndHead);
+            } else {
+                manager = pickOne(teamManagers);
+            }
+            employees.set(member, employees.get(member).withManager(manager));
+        }
+    }
+
+    private static List<Integer> atLevel(List<SeedEmployee> employees, List<Integer> eligible, int level, int except) {
+        return eligible.stream().filter(i -> i != except && employees.get(i).level() == level).toList();
+    }
+
+    private int pickOne(List<Integer> candidates) {
+        return candidates.get(random.nextInt(candidates.size()));
     }
 
     private SeedEmployee next() {
@@ -92,7 +141,7 @@ final class SeedDataGenerator {
         EmployeeProfile profile = new EmployeeProfile(name, title(department, type, level), department, type, country);
         boolean active = random.nextDouble() < ACTIVE_SHARE;
         LocalDate joinedOn = today.minusDays(30 + random.nextInt(5 * 365));
-        return new SeedEmployee(profile, active, joinedOn, pay(country, department, type, level));
+        return new SeedEmployee(profile, active, joinedOn, pay(country, department, type, level), level, null);
     }
 
     private Map<PayType, BigDecimal> pay(Country country, Department department, EmploymentType type, int level) {

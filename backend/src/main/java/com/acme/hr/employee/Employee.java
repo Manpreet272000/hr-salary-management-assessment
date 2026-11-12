@@ -34,6 +34,10 @@ public class Employee extends AuditedEntity {
     @Column(nullable = false)
     private boolean active = true;
 
+    /** Direct manager's id; null for the top of a department's hierarchy. Validated by {@link ReportingPolicy}. */
+    @Column(name = "manager_id")
+    private Long managerId;
+
     protected Employee() {
     }
 
@@ -59,6 +63,10 @@ public class Employee extends AuditedEntity {
 
     public void deactivate() {
         this.active = false;
+    }
+
+    void reportTo(Long managerId) {
+        this.managerId = managerId;
     }
 
     public String code() {
@@ -87,5 +95,9 @@ public class Employee extends AuditedEntity {
 
     public boolean isActive() {
         return active;
+    }
+
+    public Long getManagerId() {
+        return managerId;
     }
 }

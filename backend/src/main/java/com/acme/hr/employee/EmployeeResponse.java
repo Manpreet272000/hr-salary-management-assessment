@@ -14,6 +14,7 @@ public record EmployeeResponse(
         Country country,
         String currency,
         boolean active,
+        Long managerId,
         BigDecimal monthlyGross,
         Instant createdAt,
         Instant updatedAt) {
@@ -21,7 +22,7 @@ public record EmployeeResponse(
     static EmployeeResponse of(Employee e, BigDecimal monthlyGross) {
         return new EmployeeResponse(
                 e.getId(), e.code(), e.getFullName(), e.getJobTitle(), e.getDepartment(),
-                e.getEmploymentType(), e.getCountry(), e.getCountry().currency(), e.isActive(),
+                e.getEmploymentType(), e.getCountry(), e.getCountry().currency(), e.isActive(), e.getManagerId(),
                 monthlyGross, e.getCreatedAt(), e.getUpdatedAt());
     }
 }

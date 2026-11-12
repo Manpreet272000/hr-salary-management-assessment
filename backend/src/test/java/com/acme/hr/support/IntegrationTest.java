@@ -62,6 +62,7 @@ public abstract class IntegrationTest {
     void emptyTables() {
         jdbc.update("DELETE FROM monthly_attendance");
         jdbc.update("DELETE FROM salary_component");
+        jdbc.update("UPDATE employee SET manager_id = NULL");
         jdbc.update("DELETE FROM employee");
     }
 

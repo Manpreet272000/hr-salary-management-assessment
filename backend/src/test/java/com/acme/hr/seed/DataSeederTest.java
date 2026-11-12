@@ -31,6 +31,8 @@ class DataSeederTest extends IntegrationTest {
 
         assertThat(count("employee")).isEqualTo(COUNT);
         assertThat(count("salary_component")).isGreaterThanOrEqualTo(COUNT);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM employee WHERE manager_id IS NULL", Long.class))
+                .isEqualTo(9); // one head per department
         mvc.perform(get("/api/employees/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.monthlyGross").isNumber())
