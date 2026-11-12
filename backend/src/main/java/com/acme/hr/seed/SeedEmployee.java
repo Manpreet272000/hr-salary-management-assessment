@@ -1,8 +1,8 @@
 package com.acme.hr.seed;
 
-import com.acme.hr.compensation.PayType;
-import com.acme.hr.employee.EmployeeProfile;
-import com.acme.hr.employee.EmploymentType;
+import com.acme.hr.model.dto.EmployeeProfile;
+import com.acme.hr.model.enums.EmploymentType;
+import com.acme.hr.model.enums.PayType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.Map;
  * @param level        seniority 0 (associate) to 4 (principal); drives pay and who manages whom
  * @param managerIndex position of their manager in the generated list, or null for a department head
  */
-record SeedEmployee(EmployeeProfile profile, boolean active, LocalDate joinedOn, Map<PayType, BigDecimal> pay,
+public record SeedEmployee(EmployeeProfile profile, boolean active, LocalDate joinedOn, Map<PayType, BigDecimal> pay,
                     int level, Integer managerIndex) {
 
     SeedEmployee withManager(Integer index) {

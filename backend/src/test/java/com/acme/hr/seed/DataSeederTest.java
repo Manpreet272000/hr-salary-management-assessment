@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.acme.hr.config.SeedProperties;
+import com.acme.hr.dao.SeedDao;
 import com.acme.hr.support.IntegrationTest;
 import java.time.Clock;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,12 +19,14 @@ class DataSeederTest extends IntegrationTest {
 
     @Autowired
     private Clock clock;
+    @Autowired
+    private SeedDao seedDao;
 
     private DataSeeder seeder;
 
     @BeforeEach
     void setUp() {
-        seeder = new DataSeeder(jdbc, new SeedProperties(true, COUNT, 42), clock);
+        seeder = new DataSeeder(seedDao, new SeedProperties(true, COUNT, 42), clock);
     }
 
     @Test

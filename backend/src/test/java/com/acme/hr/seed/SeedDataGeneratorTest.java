@@ -2,9 +2,9 @@ package com.acme.hr.seed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.acme.hr.compensation.PayType;
-import com.acme.hr.employee.Department;
-import com.acme.hr.employee.EmploymentType;
+import com.acme.hr.model.enums.Department;
+import com.acme.hr.model.enums.EmploymentType;
+import com.acme.hr.model.enums.PayType;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;

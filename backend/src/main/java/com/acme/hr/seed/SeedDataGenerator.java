@@ -1,10 +1,10 @@
 package com.acme.hr.seed;
 
-import com.acme.hr.common.Country;
-import com.acme.hr.compensation.PayType;
-import com.acme.hr.employee.Department;
-import com.acme.hr.employee.EmployeeProfile;
-import com.acme.hr.employee.EmploymentType;
+import com.acme.hr.model.dto.EmployeeProfile;
+import com.acme.hr.model.enums.Country;
+import com.acme.hr.model.enums.Department;
+import com.acme.hr.model.enums.EmploymentType;
+import com.acme.hr.model.enums.PayType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -19,7 +19,7 @@ import java.util.Random;
  * Deterministic, realistic-looking org data: country/department/level mixes, local-currency pay
  * bands, stipends for interns and incentives for sales. Pure (no I/O) so it is unit-tested.
  */
-final class SeedDataGenerator {
+public final class SeedDataGenerator {
 
     private static final String[] FIRST_NAMES = {
         "Aarav", "Priya", "Rohan", "Ananya", "Vikram", "Meera", "Arjun", "Kavya", "Ishaan", "Diya",

@@ -1,5 +1,7 @@
 package com.acme.hr.seed;
 
+import com.acme.hr.config.SeedProperties;
+import com.acme.hr.dao.SeedDao;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -12,26 +14,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Seeds an empty database with {@code app.seed.employee-count} employees. Uses JDBC batch inserts in
- * a single transaction (about a second for 10k employees on SQLite) instead of row-by-row JPA saves.
+ * Seeds an empty database with {@code app.seed.employee-count} employees: generates them, then writes
+ * them through {@link SeedDao} batch inserts in one transaction (about 1.5 s for 10k on SQLite).
  */
 @Component
 @ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true")
-class DataSeeder implements ApplicationRunner {
+public class DataSeeder implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
-    private final JdbcTemplate jdbc;
+    private final SeedDao seedDao;
     private final SeedProperties properties;
     private final Clock clock;
 
-    DataSeeder(JdbcTemplate jdbc, SeedProperties properties, Clock clock) {
-        this.jdbc = jdbc;
+    DataSeeder(SeedDao seedDao, SeedProperties properties, Clock clock) {
+        this.seedDao = seedDao;
         this.properties = properties;
         this.clock = clock;
     }
@@ -39,8 +40,8 @@ class DataSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        Long existing = jdbc.queryForObject("SELECT COUNT(*) FROM employee", Long.class);
-        if (existing != null && existing > 0) {
+        long existing = seedDao.countEmployees();
+        if (existing > 0) {
             log.info("Skipping seed: {} employees already present", existing);
             return;
         }
@@ -70,13 +71,8 @@ class DataSeeder implements ApplicationRunner {
             e.pay().forEach((payType, amount) -> payRows.add(new Object[] {
                 id, payType.name(), amount, e.profile().country().currency(), Date.valueOf(e.joinedOn()), joined, joined}));
         }
-        jdbc.batchUpdate("""
-                INSERT INTO employee (id, full_name, job_title, department, employment_type, country, active, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", employeeRows);
-        jdbc.batchUpdate("""
-                INSERT INTO salary_component (employee_id, pay_type, amount, currency, effective_from, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)""", payRows);
-        // Set after all rows exist, since a manager may have a higher id than their report.
-        jdbc.batchUpdate("UPDATE employee SET manager_id = ? WHERE id = ?", managerRows);
+        seedDao.insertEmployees(employeeRows);
+        seedDao.insertSalaryComponents(payRows);
+        seedDao.assignManagers(managerRows);
     }
 }
