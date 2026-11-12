@@ -39,6 +39,17 @@ step was checked by running the code.
 > […], java as backend and angular for FE as requested should be catered here, make better efficient choices
 > wherever possible avoid repetition of logic and make the code scalable for further additions wherever possible
 
+Follow-up prompts during review:
+
+> what are the design patterns kept in mind here that offer extensibility if we want to add another leave
+> pool, or want to introduce a reporting hierarchy of employees within each other that should also be done
+> here with validations that a sales person should only report to a sales manager not an engineering manager
+
+> Also i need the auditing maintained against employees leaves taken, salary changes, when happened, done by
+> who (i know for now we are having HR itself) still have an extension room for the same
+
+> auditing must follow AOP
+
 The assessment brief was given as extra context (multi-country org, one-page requirements doc,
 commit artifacts, incremental commits).
 
@@ -47,6 +58,11 @@ commit artifacts, incremental commits).
 - **Tests first for rules.** Pay calculation, working days, payroll cutoff and eligibility have unit tests with hand-computed expected values (e.g. 42,000 × 3 ÷ 21 = 6,000 LOP, then (42,000 − 6,000) × 0.95 = 34,200 net).
 - **Real database in API tests.** No mocked repositories. Tests run Flyway migrations on a temporary SQLite file with a fixed clock, and cover the active and inactive employee scenarios end to end.
 - **Running the real thing.** I booted the app, seeded 10k rows (1.5 s), timed the API with `curl` (20–90 ms queries), and took screenshots of each screen against the real data.
+
+## Design corrections from review
+
+- **Leave pools weren't extensible.** Asked about adding a leave pool, the agent admitted that the first design (three fixed leave columns) needed changes in five places. It refactored leave to `LeaveType` with a `paid` flag, stored as rows (migration V3), so a pool is now one enum constant.
+- **Audit moved from events to AOP.** The first audit draft had services publish audit events. On review I asked for AOP, so it became `@Audited` + `AuditAspect` with per-feature snapshots, and services have no audit code at all.
 
 ## Mistakes caught along the way
 

@@ -19,8 +19,10 @@ leave, estimating each month's net payout, and answering "how does the org pay p
 
 - **Employee directory.** Server-side search (name, title or `EMP` code), filters (department, type, country, active/inactive), sorting and paging over 10k employees.
 - **Profiles and status.** Create and edit employees. Mark them inactive when they leave, and reactivate them if they're rehired.
+- **Reporting hierarchy.** Each employee has one manager, validated by rules: same department (a Sales rep reports to a Sales manager), active full-time managers, no loops. The manager picker only lists valid managers.
 - **Monthly pay.** `REGULAR` salary, `INCENTIVE` (Sales only), `STIPEND` (interns only), always in the country's currency. Every revision is kept as history.
-- **Attendance and pay estimate.** Record a month's applied sick and casual leave and unplanned leave. See gross pay → loss-of-pay deduction → 5% tax → net payout, along with the payroll cutoff date (the second-last working day).
+- **Attendance and pay estimate.** Record a month's leave per leave type (sick and casual are paid; unplanned is loss of pay; new pools are one enum value). See gross pay → loss-of-pay deduction → 5% tax → net payout, along with the payroll cutoff date (the second-last working day).
+- **Audit trail.** Every change to profile, status, manager, pay and leave is recorded: before → after, when, who, and via which operation. It's applied with AOP (`@Audited`) and is append-only.
 - **Pay insights.** Headcount, plus min / median / average / max / total monthly pay by department, country, employment type or job title, split by currency.
 
 ## Run locally
@@ -61,8 +63,8 @@ docker run -p 8080:8080 -v acme-hr-data:/data acme-hr
 ## Tests
 
 ```bash
-cd backend && mvn test           # 65 tests: unit (pay rules) + API tests on a temporary SQLite DB
-cd frontend && npx ng test --watch=false   # 16 tests
+cd backend && mvn test           # 97 tests: unit (pay rules) + API tests on a temporary SQLite DB
+cd frontend && npx ng test --watch=false   # 17 tests
 ```
 
 Backend tests use a fixed clock (2026-11-11), so month and working-day maths is deterministic.
@@ -71,9 +73,10 @@ Backend tests use a fixed clock (2026-11-11), so month and working-day maths is 
 
 ```
 backend/src/main/java/com/acme/hr/
-  employee/       directory, profile, active status
+  employee/       directory, profile, active status, reporting hierarchy + rules
   compensation/   pay components, eligibility policy, history
-  attendance/     monthly leave, working-day calendar, payroll cutoff
+  attendance/     monthly leave per leave type, working-day calendar, payroll cutoff
+  audit/          @Audited aspect, snapshots, append-only audit log
   payroll/        pure pay calculator, tax policy, monthly estimate
   insights/       aggregate SQL for pay and headcount
   meta/           enum reference data for the UI
@@ -82,7 +85,7 @@ backend/src/main/java/com/acme/hr/
 backend/src/main/resources/db/migration/   Flyway schema
 frontend/src/app/
   core/           API client, models, formatting, error interceptor
-  employees/      directory, detail, pay and estimate panels
+  employees/      directory, detail, reporting, pay, estimate and activity panels
   insights/       pay insights page
 docs/             requirements, assumptions, architecture, AI usage
 ```
