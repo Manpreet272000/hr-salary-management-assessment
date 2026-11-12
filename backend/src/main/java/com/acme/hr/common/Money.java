@@ -16,6 +16,11 @@ public final class Money {
         return value.setScale(SCALE, ROUNDING);
     }
 
+    /** "INR 80,000.00" — for human-readable text such as audit summaries. */
+    public static String format(BigDecimal amount, String currency) {
+        return "%s %,.2f".formatted(currency, round(amount));
+    }
+
     public static BigDecimal zero() {
         return BigDecimal.ZERO.setScale(SCALE);
     }

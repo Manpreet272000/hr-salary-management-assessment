@@ -1,5 +1,7 @@
 package com.acme.hr.compensation;
 
+import com.acme.hr.audit.AuditSubject;
+import com.acme.hr.audit.Audited;
 import com.acme.hr.common.BusinessRuleException;
 import com.acme.hr.common.Money;
 import com.acme.hr.employee.Employee;
@@ -54,6 +56,7 @@ public class CompensationService implements EmployeePayLookup {
     }
 
     /** Sets the monthly amount of one pay type from today onwards, keeping the previous amount as history. */
+    @Audited(operation = "Revise pay", subjects = AuditSubject.PAY)
     public SalaryComponent revise(long employeeId, PayType payType, BigDecimal amount) {
         if (amount == null || amount.signum() <= 0) {
             throw new BusinessRuleException("Amount must be positive");
@@ -77,6 +80,7 @@ public class CompensationService implements EmployeePayLookup {
     }
 
     /** Stops paying a component from today (e.g. an incentive plan ends). */
+    @Audited(operation = "End pay", subjects = AuditSubject.PAY)
     public void end(long employeeId, PayType payType) {
         employees.getActive(employeeId);
         SalaryComponent current = components.findByEmployeeIdAndPayTypeAndEffectiveToIsNull(employeeId, payType)

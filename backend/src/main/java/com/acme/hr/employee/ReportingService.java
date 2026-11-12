@@ -1,5 +1,7 @@
 package com.acme.hr.employee;
 
+import com.acme.hr.audit.AuditSubject;
+import com.acme.hr.audit.Audited;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +30,7 @@ public class ReportingService {
     }
 
     /** Sets (or with a null id, removes) the employee's manager after checking every reporting rule. */
+    @Audited(operation = "Change manager", subjects = AuditSubject.MANAGER)
     public Employee assignManager(long employeeId, Long managerId) {
         Employee employee = employees.getActive(employeeId);
         if (managerId == null) {

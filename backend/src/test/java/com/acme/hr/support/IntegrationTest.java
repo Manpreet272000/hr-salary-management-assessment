@@ -60,6 +60,7 @@ public abstract class IntegrationTest {
 
     @BeforeEach
     void emptyTables() {
+        jdbc.update("DELETE FROM audit_event");
         jdbc.update("DELETE FROM monthly_leave");
         jdbc.update("DELETE FROM salary_component");
         jdbc.update("UPDATE employee SET manager_id = NULL");

@@ -1,5 +1,7 @@
 package com.acme.hr.employee;
 
+import com.acme.hr.audit.AuditSubject;
+import com.acme.hr.audit.Audited;
 import com.acme.hr.common.BusinessRuleException;
 import com.acme.hr.common.ResourceNotFoundException;
 import java.util.List;
@@ -45,10 +47,13 @@ public class EmployeeService {
         return employee;
     }
 
+    @Audited(operation = "Add employee", subjects = AuditSubject.PROFILE, employeeId = "#result?.id")
     public Employee create(EmployeeProfile profile) {
         return employees.save(new Employee(profile));
     }
 
+    @Audited(operation = "Update profile", employeeId = "#id",
+            subjects = {AuditSubject.PROFILE, AuditSubject.MANAGER, AuditSubject.PAY})
     public Employee updateProfile(long id, EmployeeProfile profile) {
         Employee employee = get(id);
         EmployeeProfile previous = employee.profile();
@@ -59,6 +64,7 @@ public class EmployeeService {
         return employee;
     }
 
+    @Audited(operation = "Change status", employeeId = "#id", subjects = {AuditSubject.STATUS, AuditSubject.MANAGER})
     public Employee setActive(long id, boolean active) {
         Employee employee = get(id);
         if (active) {

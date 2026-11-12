@@ -1,5 +1,7 @@
 package com.acme.hr.attendance;
 
+import com.acme.hr.audit.AuditSubject;
+import com.acme.hr.audit.Audited;
 import com.acme.hr.common.BusinessRuleException;
 import com.acme.hr.employee.EmployeeService;
 import java.time.Clock;
@@ -36,6 +38,7 @@ public class AttendanceService {
     }
 
     /** Creates or replaces the month's leave record. */
+    @Audited(operation = "Record leave", subjects = AuditSubject.LEAVE, scope = "#month")
     public LeaveSummary record(long employeeId, YearMonth month, LeaveSummary summary) {
         employees.getActive(employeeId);
         if (month.isAfter(YearMonth.now(clock))) {
