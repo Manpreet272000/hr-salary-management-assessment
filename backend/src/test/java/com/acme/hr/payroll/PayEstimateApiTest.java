@@ -34,7 +34,7 @@ class PayEstimateApiTest extends IntegrationTest {
         recordLeave(id, "2026-11", 2, 3, 0).andExpect(status().isOk());
 
         estimate(id, "2026-11")
-                .andExpect(jsonPath("$.leaves.sickLeaves").value(2))
+                .andExpect(jsonPath("$.leaves.SICK").value(2))
                 .andExpect(jsonPath("$.breakdown.lossOfPayDeduction").value(0.0))
                 .andExpect(jsonPath("$.breakdown.netPay").value(39900.0));
     }
@@ -61,7 +61,7 @@ class PayEstimateApiTest extends IntegrationTest {
 
         estimate(id, "2026-11").andExpect(jsonPath("$.breakdown.lossOfPayDays").value(1));
         mvc.perform(get("/api/employees/{id}/attendance/2026-11", id))
-                .andExpect(jsonPath("$.leaves.unplannedLeaves").value(1))
+                .andExpect(jsonPath("$.leaves.UNPLANNED").value(1))
                 .andExpect(jsonPath("$.workingDays").value(21));
     }
 
@@ -137,7 +137,7 @@ class PayEstimateApiTest extends IntegrationTest {
 
     private ResultActions recordLeave(long id, String month, int sick, int casual, int unplanned) throws Exception {
         return send(put("/api/employees/{id}/attendance/{month}", id, month),
-                Map.of("sickLeaves", sick, "casualLeaves", casual, "unplannedLeaves", unplanned));
+                Map.of("SICK", sick, "CASUAL", casual, "UNPLANNED", unplanned));
     }
 
     private ResultActions estimate(long id, String month) throws Exception {
