@@ -1,0 +1,77 @@
+mat-card {
+  margin-bottom: 16px;
+}
+
+.notice {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-high);
+}
+
+.pay-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) minmax(120px, 1fr) minmax(160px, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  .label {
+    font-weight: 500;
+  }
+
+  .amount {
+    font: var(--mat-sys-title-medium);
+  }
+
+  .actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.history {
+  margin-top: 16px;
+}
+
+.leave-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+
+  mat-form-field {
+    width: 170px;
+  }
+}
+
+.breakdown {
+  width: 100%;
+  max-width: 560px;
+  margin-top: 16px;
+  border-collapse: collapse;
+
+  td {
+    padding: 6px 0;
+  }
+
+  .deduction {
+    color: var(--mat-sys-error);
+  }
+
+  .subtotal td {
+    border-top: 1px solid var(--mat-sys-outline-variant);
+    font-weight: 500;
+  }
+
+  .total td {
+    border-top: 2px solid var(--mat-sys-outline);
+    font: var(--mat-sys-title-medium);
+    padding-top: 10px;
+  }
+}

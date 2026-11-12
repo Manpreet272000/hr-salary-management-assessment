@@ -1,0 +1,80 @@
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .tile {
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--mat-sys-surface-container);
+
+    .value {
+      font: var(--mat-sys-headline-medium);
+    }
+  }
+}
+
+mat-card {
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.data {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    font: var(--mat-sys-label-large);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .strong {
+    font-weight: 600;
+  }
+}
+
+.range-col {
+  width: 200px;
+}
+
+.range {
+  position: relative;
+  height: 10px;
+  min-width: 160px;
+  border-radius: 5px;
+  background: var(--mat-sys-surface-container-high);
+
+  .span {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 5px;
+    background: var(--mat-sys-primary-container);
+  }
+
+  .median {
+    position: absolute;
+    top: -3px;
+    width: 3px;
+    height: 16px;
+    margin-left: -1px;
+    border-radius: 2px;
+    background: var(--mat-sys-primary);
+  }
+}

@@ -1,0 +1,16 @@
+h1 .status {
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.notice {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-high);
+}

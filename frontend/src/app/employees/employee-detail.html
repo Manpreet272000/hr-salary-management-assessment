@@ -1,0 +1,37 @@
+<a mat-button routerLink="/employees"><mat-icon>arrow_back</mat-icon> All employees</a>
+
+@if (employee.isLoading() && !employee.value()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+@if (employee.error()) {
+  <p class="notice">This employee could not be loaded.</p>
+}
+
+@if (employee.value(); as e) {
+  <header class="page-header">
+    <div>
+      <h1>
+        {{ e.fullName }}
+        <span class="status" [class.inactive]="!e.active">{{ e.active ? 'Active' : 'Inactive' }}</span>
+      </h1>
+      <p class="subtitle">
+        <span class="mono">{{ e.code }}</span> · {{ e.jobTitle }} · {{ e.department | humanize }} ·
+        {{ e.employmentType | humanize }} · {{ countryName(e.country) }}
+      </p>
+      <p class="subtitle">
+        Monthly gross <strong>{{ e.monthlyGross | money: e.currency }}</strong>
+        · on record since {{ e.createdAt | date: 'mediumDate' }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="edit(e)"><mat-icon>edit</mat-icon> Edit profile</button>
+      <button mat-stroked-button (click)="toggleActive(e)">
+        <mat-icon>{{ e.active ? 'person_off' : 'person_check' }}</mat-icon>
+        {{ e.active ? 'Mark inactive' : 'Reactivate' }}
+      </button>
+    </div>
+  </header>
+
+  <app-compensation-panel [employee]="e" [refreshKey]="payVersion()" (changed)="onPayChanged()" />
+  <app-pay-estimate-panel [employee]="e" [refreshKey]="payVersion()" />
+}

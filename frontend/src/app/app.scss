@@ -1,0 +1,25 @@
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 24px;
+  background: var(--mat-sys-surface-container);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: var(--mat-sys-title-medium);
+  }
+
+  .active {
+    background: var(--mat-sys-secondary-container);
+  }
+}
+
+.content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}

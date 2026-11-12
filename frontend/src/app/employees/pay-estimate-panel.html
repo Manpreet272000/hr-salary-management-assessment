@@ -1,0 +1,57 @@
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>Attendance &amp; pay estimate</mat-card-title>
+    @if (attendance.value(); as a) {
+      <mat-card-subtitle>
+        {{ a.workingDays }} working days · attendance checked on {{ a.payrollCutoff }} (payroll cutoff)
+      </mat-card-subtitle>
+    }
+  </mat-card-header>
+  <mat-card-content>
+    @if (!employee().active) {
+      <p class="notice">{{ employee().fullName }} is inactive, so no payout is due and attendance isn't tracked.</p>
+    } @else {
+      <form class="leave-form" [formGroup]="leaveForm" (ngSubmit)="saveLeave()">
+        <mat-form-field subscriptSizing="dynamic">
+          <mat-label>Month</mat-label>
+          <input matInput type="month" [max]="currentMonth" [value]="month()"
+                 (change)="selectMonth($any($event.target).value)" />
+        </mat-form-field>
+        <mat-form-field subscriptSizing="dynamic">
+          <mat-label>Sick leave (applied)</mat-label>
+          <input matInput type="number" min="0" formControlName="sickLeaves" />
+        </mat-form-field>
+        <mat-form-field subscriptSizing="dynamic">
+          <mat-label>Casual leave (applied)</mat-label>
+          <input matInput type="number" min="0" formControlName="casualLeaves" />
+        </mat-form-field>
+        <mat-form-field subscriptSizing="dynamic">
+          <mat-label>Unplanned leave (LOP)</mat-label>
+          <input matInput type="number" min="0" formControlName="unplannedLeaves" />
+        </mat-form-field>
+        <button mat-flat-button type="submit" [disabled]="leaveForm.invalid || leaveForm.pristine">Save leave</button>
+      </form>
+      <p class="muted">Applied sick and casual leave are paid. Only unplanned leave reduces fixed pay.</p>
+
+      @if (estimate.value(); as e) {
+        <table class="breakdown">
+          <tbody>
+            <tr><td>Fixed pay (salary / stipend)</td><td class="num">{{ e.breakdown.fixedPay | money: e.currency }}</td></tr>
+            <tr><td>Variable pay (incentive)</td><td class="num">{{ e.breakdown.variablePay | money: e.currency }}</td></tr>
+            <tr class="subtotal"><td>Gross pay</td><td class="num">{{ e.breakdown.grossPay | money: e.currency }}</td></tr>
+            <tr>
+              <td>Loss of pay: {{ e.breakdown.lossOfPayDays }} of {{ e.breakdown.workingDays }} working days</td>
+              <td class="num deduction">− {{ e.breakdown.lossOfPayDeduction | money: e.currency }}</td>
+            </tr>
+            <tr class="subtotal"><td>Taxable pay</td><td class="num">{{ e.breakdown.taxablePay | money: e.currency }}</td></tr>
+            <tr>
+              <td>Tax ({{ e.breakdown.taxRate * 100 }}% flat)</td>
+              <td class="num deduction">− {{ e.breakdown.tax | money: e.currency }}</td>
+            </tr>
+            <tr class="total"><td>Estimated net payout for {{ e.month }}</td><td class="num">{{ e.breakdown.netPay | money: e.currency }}</td></tr>
+          </tbody>
+        </table>
+      }
+    }
+  </mat-card-content>
+</mat-card>

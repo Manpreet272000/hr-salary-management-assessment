@@ -1,0 +1,100 @@
+<header class="page-header">
+  <div>
+    <h1>Pay insights</h1>
+    <p class="subtitle">Active employees' current monthly pay. Figures are per currency and never converted.</p>
+  </div>
+</header>
+
+<div class="controls">
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label>Group by</mat-label>
+    <mat-select [value]="groupBy()" (valueChange)="groupBy.set($event)">
+      @for (d of meta.dimensions(); track d) {
+        <mat-option [value]="d">{{ d | humanize }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label>Country (pay)</mat-label>
+    <mat-select [value]="country()" (valueChange)="country.set($event)">
+      <mat-option value="">All countries</mat-option>
+      @for (c of meta.countries(); track c.code) {
+        <mat-option [value]="c.code">{{ c.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<section class="stat-tiles">
+  <div class="tile"><div class="value">{{ totals().total }}</div><div class="muted">Employees on record</div></div>
+  <div class="tile"><div class="value">{{ totals().active }}</div><div class="muted">Active</div></div>
+  <div class="tile"><div class="value">{{ totals().inactive }}</div><div class="muted">Inactive (left)</div></div>
+</section>
+
+<mat-card appearance="outlined">
+  <mat-card-header><mat-card-title>Headcount by {{ groupBy() | humanize | lowercase }}</mat-card-title></mat-card-header>
+  <mat-card-content>
+    <table class="data">
+      <thead><tr><th>{{ groupBy() | humanize }}</th><th class="num">Active</th><th class="num">Inactive</th></tr></thead>
+      <tbody>
+        @for (row of headcount.value() ?? []; track row.group) {
+          <tr><td>{{ row.group | humanize }}</td><td class="num">{{ row.active }}</td><td class="num">{{ row.inactive }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </mat-card-content>
+</mat-card>
+
+@if (payStats.isLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+@for (section of currencySections(); track section.currency) {
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Monthly pay in {{ section.currency }}</mat-card-title>
+      <mat-card-subtitle>
+        {{ section.headcount }} active employees · total monthly payroll {{ section.totalMonthlyPayroll | money: section.currency }}
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <table class="data">
+        <thead>
+          <tr>
+            <th>{{ groupBy() | humanize }}</th>
+            <th class="num">People</th>
+            <th class="num">Min</th>
+            <th class="num">Median</th>
+            <th class="num">Average</th>
+            <th class="num">Max</th>
+            <th class="range-col">Range (min · median · max)</th>
+            <th class="num">Monthly total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of section.rows; track row.group) {
+            <tr>
+              <td>{{ row.group | humanize }}</td>
+              <td class="num">{{ row.headcount }}</td>
+              <td class="num">{{ row.min | money: row.currency }}</td>
+              <td class="num strong">{{ row.median | money: row.currency }}</td>
+              <td class="num">{{ row.average | money: row.currency }}</td>
+              <td class="num">{{ row.max | money: row.currency }}</td>
+              <td class="range-col">
+                <div class="range" [attr.aria-label]="'Range ' + row.min + ' to ' + row.max">
+                  <span class="span" [style.left.%]="pct(row.min, section.scaleMax)"
+                        [style.width.%]="pct(row.max, section.scaleMax) - pct(row.min, section.scaleMax)"></span>
+                  <span class="median" [style.left.%]="pct(row.median, section.scaleMax)"></span>
+                </div>
+              </td>
+              <td class="num">{{ row.totalMonthlyPayroll | money: row.currency }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+} @empty {
+  @if (!payStats.isLoading()) {
+    <p class="muted">No pay data for this selection.</p>
+  }
+}

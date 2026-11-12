@@ -1,0 +1,70 @@
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>Monthly pay</mat-card-title>
+    <mat-card-subtitle>
+      Gross {{ compensation.value()?.monthlyGross | money: employee().currency }} / month · paid in {{ employee().currency }}
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    @if (!employee().active) {
+      <p class="notice">Pay can't be changed while {{ employee().fullName }} is inactive.</p>
+    }
+    @for (row of rows(); track row.payType) {
+      <div class="pay-row">
+        <div class="pay-type">
+          <div class="label">{{ row.payType | humanize }}</div>
+          <div class="muted">{{ hints[row.payType] }}</div>
+        </div>
+        <div class="current">
+          @if (row.current) {
+            <div class="amount">{{ row.current.amount | money: row.current.currency }}</div>
+            <div class="muted">since {{ row.current.effectiveFrom }}</div>
+          } @else {
+            <div class="muted">Not set</div>
+          }
+        </div>
+        <mat-form-field subscriptSizing="dynamic" class="amount-input">
+          <mat-label>New amount ({{ employee().currency }})</mat-label>
+          <input matInput type="number" min="0.01" step="0.01"
+                 [disabled]="!employee().active"
+                 [ngModel]="drafts()[row.payType]" (ngModelChange)="setDraft(row.payType, $event)"
+                 (keydown.enter)="revise(row.payType)" />
+        </mat-form-field>
+        <div class="actions">
+          <button mat-flat-button [disabled]="!canSave(row.payType)" (click)="revise(row.payType)">
+            {{ row.current ? 'Revise' : 'Set' }}
+          </button>
+          @if (row.current) {
+            <button mat-button [disabled]="!employee().active || busy()" (click)="end(row.payType)">End</button>
+          }
+        </div>
+      </div>
+    }
+
+    <mat-expansion-panel class="history">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Pay history ({{ history.value()?.length ?? 0 }} entries)</mat-panel-title>
+      </mat-expansion-panel-header>
+      <table mat-table [dataSource]="history.value() ?? []">
+        <ng-container matColumnDef="payType">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let c">{{ c.payType | humanize }}</td>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef class="num">Amount</th>
+          <td mat-cell *matCellDef="let c" class="num">{{ c.amount | money: c.currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="effectiveFrom">
+          <th mat-header-cell *matHeaderCellDef>From</th>
+          <td mat-cell *matCellDef="let c">{{ c.effectiveFrom }}</td>
+        </ng-container>
+        <ng-container matColumnDef="effectiveTo">
+          <th mat-header-cell *matHeaderCellDef>Until</th>
+          <td mat-cell *matCellDef="let c">{{ c.effectiveTo ?? 'Current' }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: historyColumns"></tr>
+      </table>
+    </mat-expansion-panel>
+  </mat-card-content>
+</mat-card>
