@@ -32,6 +32,8 @@
     </div>
   </header>
 
-  <app-compensation-panel [employee]="e" [refreshKey]="payVersion()" (changed)="onPayChanged()" />
-  <app-pay-estimate-panel [employee]="e" [refreshKey]="payVersion()" />
+  <app-reporting-panel [employee]="e" [refreshKey]="payVersion()" (changed)="onChanged()" />
+  <app-compensation-panel [employee]="e" [refreshKey]="payVersion()" (changed)="onChanged()" />
+  <app-pay-estimate-panel [employee]="e" [refreshKey]="payVersion()" (changed)="onChanged()" />
+  <app-activity-panel [employeeId]="e.id" [refreshKey]="payVersion()" />
 }

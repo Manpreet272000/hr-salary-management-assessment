@@ -3,9 +3,11 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   Attendance,
+  AuditEntry,
   Compensation,
   Employee,
   EmployeeFilters,
+  EmployeeRef,
   EmployeeProfile,
   HeadcountRow,
   LeaveSummary,
@@ -14,6 +16,7 @@ import {
   PayComponent,
   PayEstimate,
   PayStatsRow,
+  Reporting,
 } from './models';
 
 export interface PageRequest {
@@ -52,6 +55,20 @@ export class HrApi {
     return this.http.patch<Employee>(`${employeeUrl(id)}/status`, { active });
   }
 
+  reporting(id: number): Observable<Reporting> {
+    return this.http.get<Reporting>(`${employeeUrl(id)}/reporting`);
+  }
+
+  /** Assigns a manager, or removes the current one when managerId is null. */
+  setManager(id: number, managerId: number | null): Observable<Reporting> {
+    return this.http.put<Reporting>(`${employeeUrl(id)}/manager`, { managerId });
+  }
+
+  /** Employees the reporting rules allow as this employee's manager. */
+  managerCandidates(id: number, query: string): Observable<EmployeeRef[]> {
+    return this.http.get<EmployeeRef[]>(`${employeeUrl(id)}/manager-candidates`, { params: toParams({ query }) });
+  }
+
   compensation(id: number): Observable<Compensation> {
     return this.http.get<Compensation>(`${employeeUrl(id)}/compensation`);
   }
@@ -78,6 +95,11 @@ export class HrApi {
 
   payEstimate(id: number, month: string): Observable<PayEstimate> {
     return this.http.get<PayEstimate>(`${employeeUrl(id)}/pay-estimate`, { params: { month } });
+  }
+
+  /** Audit trail, newest first. */
+  audit(filters: { employeeId?: number; subject?: string }, page: PageRequest): Observable<Page<AuditEntry>> {
+    return this.http.get<Page<AuditEntry>>('/api/audit', { params: toParams({ ...filters, ...page }) });
   }
 
   headcount(groupBy: string): Observable<HeadcountRow[]> {

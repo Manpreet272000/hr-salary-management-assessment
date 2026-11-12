@@ -24,6 +24,7 @@ export interface Employee extends EmployeeProfile {
   code: string;
   currency: string;
   active: boolean;
+  managerId: number | null;
   monthlyGross: number;
   createdAt: string;
   updatedAt: string;
@@ -53,10 +54,31 @@ export interface Compensation {
   monthlyGross: number;
 }
 
-export interface LeaveSummary {
-  sickLeaves: number;
-  casualLeaves: number;
-  unplannedLeaves: number;
+/** Leave days per leave type code, e.g. { SICK: 1, CASUAL: 0, UNPLANNED: 2 }. Types come from Meta.leaveTypes. */
+export type LeaveSummary = Record<string, number>;
+
+export interface LeaveTypeInfo {
+  code: string;
+  /** Unpaid leave days are loss-of-pay days. */
+  paid: boolean;
+}
+
+/** A compact reference to an employee, used in reporting lines. */
+export interface EmployeeRef {
+  id: number;
+  code: string;
+  fullName: string;
+  jobTitle: string;
+  department: string;
+  employmentType: string;
+  active: boolean;
+}
+
+export interface Reporting {
+  manager: EmployeeRef | null;
+  /** From the top of the hierarchy down to the direct manager. */
+  chain: EmployeeRef[];
+  directReports: EmployeeRef[];
 }
 
 export interface Attendance {
@@ -106,6 +128,18 @@ export interface PayStatsRow {
   totalMonthlyPayroll: number;
 }
 
+/** One audited change: what changed (before → after), when, by whom, and through which operation. */
+export interface AuditEntry {
+  id: number;
+  employeeId: number;
+  subject: string;
+  operation: string;
+  summary: string;
+  details: { before: Record<string, string | null>; after: Record<string, string | null> };
+  actor: string;
+  occurredAt: string;
+}
+
 export interface CountryInfo {
   code: string;
   name: string;
@@ -117,6 +151,7 @@ export interface Meta {
   employmentTypes: string[];
   countries: CountryInfo[];
   payTypes: string[];
+  leaveTypes: LeaveTypeInfo[];
   dimensions: string[];
   taxRate: number;
 }

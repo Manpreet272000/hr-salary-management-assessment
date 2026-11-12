@@ -17,21 +17,15 @@
           <input matInput type="month" [max]="currentMonth" [value]="month()"
                  (change)="selectMonth($any($event.target).value)" />
         </mat-form-field>
-        <mat-form-field subscriptSizing="dynamic">
-          <mat-label>Sick leave (applied)</mat-label>
-          <input matInput type="number" min="0" formControlName="sickLeaves" />
-        </mat-form-field>
-        <mat-form-field subscriptSizing="dynamic">
-          <mat-label>Casual leave (applied)</mat-label>
-          <input matInput type="number" min="0" formControlName="casualLeaves" />
-        </mat-form-field>
-        <mat-form-field subscriptSizing="dynamic">
-          <mat-label>Unplanned leave (LOP)</mat-label>
-          <input matInput type="number" min="0" formControlName="unplannedLeaves" />
-        </mat-form-field>
+        @for (type of meta.leaveTypes(); track type.code) {
+          <mat-form-field subscriptSizing="dynamic">
+            <mat-label>{{ type.code | humanize }} ({{ type.paid ? 'paid' : 'loss of pay' }})</mat-label>
+            <input matInput type="number" min="0" [formControlName]="type.code" />
+          </mat-form-field>
+        }
         <button mat-flat-button type="submit" [disabled]="leaveForm.invalid || leaveForm.pristine">Save leave</button>
       </form>
-      <p class="muted">Applied sick and casual leave are paid. Only unplanned leave reduces fixed pay.</p>
+      <p class="muted">Paid leave doesn't change pay. Each loss-of-pay day reduces fixed pay by one working day's worth.</p>
 
       @if (estimate.value(); as e) {
         <table class="breakdown">

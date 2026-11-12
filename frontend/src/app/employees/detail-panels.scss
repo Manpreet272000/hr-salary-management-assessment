@@ -75,3 +75,66 @@ mat-card {
     padding-top: 10px;
   }
 }
+
+.reporting-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+  padding-top: 8px;
+
+  .label {
+    font: var(--mat-sys-label-large);
+    color: var(--mat-sys-on-surface-variant);
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+
+  a {
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .direct {
+    color: var(--mat-sys-primary);
+    font-weight: 600;
+  }
+
+  .sep {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--mat-sys-outline);
+  }
+}
+
+.manager-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+
+  mat-form-field {
+    flex: 1 1 260px;
+  }
+}
+
+.report {
+  display: block;
+  padding: 4px 0;
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

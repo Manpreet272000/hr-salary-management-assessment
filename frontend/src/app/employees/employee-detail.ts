@@ -12,12 +12,14 @@ import { MetaStore } from '../core/meta-store';
 import { Employee } from '../core/models';
 import { CompensationPanel } from './compensation-panel';
 import { EmployeeFormDialog } from './employee-form-dialog';
+import { ActivityPanel } from './activity-panel';
 import { PayEstimatePanel } from './pay-estimate-panel';
+import { ReportingPanel } from './reporting-panel';
 
 /** One employee: profile and status, monthly pay, and attendance-based pay estimate. */
 @Component({
   selector: 'app-employee-detail',
-  imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, HumanizePipe, MoneyPipe, CompensationPanel, PayEstimatePanel],
+  imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, HumanizePipe, MoneyPipe, CompensationPanel, PayEstimatePanel, ReportingPanel, ActivityPanel],
   templateUrl: './employee-detail.html',
   styleUrl: './employee-detail.scss',
 })
@@ -33,7 +35,7 @@ export class EmployeeDetail {
     params: () => this.id(),
     stream: ({ params }) => this.api.employee(params),
   });
-  /** Incremented whenever pay may have changed, so dependent panels reload. */
+  /** Incremented after any change to this employee, so dependent panels (pay, estimate, activity) reload. */
   protected readonly payVersion = signal(0);
 
   protected countryName(code: string): string {
@@ -50,11 +52,14 @@ export class EmployeeDetail {
   }
 
   protected toggleActive(employee: Employee): void {
-    this.api.setActive(employee.id, !employee.active).subscribe((saved) => this.employee.set(saved));
+    this.api.setActive(employee.id, !employee.active).subscribe((saved) => {
+      this.employee.set(saved);
+      this.payVersion.update((v) => v + 1);
+    });
   }
 
-  /** Pay changed in the compensation panel: refresh the header's gross and the estimate. */
-  protected onPayChanged(): void {
+  /** Something changed in a panel: refresh the header and every dependent panel. */
+  protected onChanged(): void {
     this.employee.reload();
     this.payVersion.update((v) => v + 1);
   }

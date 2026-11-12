@@ -10,6 +10,7 @@ export class MetaStore {
   readonly departments = computed(() => this.meta()?.departments ?? []);
   readonly employmentTypes = computed(() => this.meta()?.employmentTypes ?? []);
   readonly countries = computed(() => this.meta()?.countries ?? []);
+  readonly leaveTypes = computed(() => this.meta()?.leaveTypes ?? []);
   readonly dimensions = computed(() => this.meta()?.dimensions ?? []);
   readonly taxRate = computed(() => this.meta()?.taxRate ?? 0);
 }

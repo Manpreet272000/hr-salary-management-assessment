@@ -1,0 +1,66 @@
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>Reporting line</mat-card-title>
+    <mat-card-subtitle>
+      {{ reporting.value()?.directReports?.length ?? 0 }} direct reports
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    @if (reporting.value(); as r) {
+      <div class="reporting-grid">
+        <div>
+          <div class="label">Reports to</div>
+          @if (r.manager; as m) {
+            <nav class="chain" aria-label="Management chain">
+              @for (person of r.chain; track person.id; let last = $last) {
+                <a [routerLink]="['/employees', person.id]" [class.direct]="last">{{ person.fullName }}</a>
+                @if (!last) {
+                  <mat-icon class="sep" aria-hidden="true">chevron_right</mat-icon>
+                }
+              }
+            </nav>
+            <div class="muted">{{ m.jobTitle }} · {{ m.code }}</div>
+          } @else {
+            <div class="muted">Nobody. Top of the {{ employee().department | humanize | lowercase }} hierarchy.</div>
+          }
+
+          @if (employee().active) {
+            <div class="manager-picker">
+              <mat-form-field subscriptSizing="dynamic">
+                <mat-label>{{ r.manager ? 'Change manager' : 'Assign manager' }}</mat-label>
+                <mat-icon matPrefix>search</mat-icon>
+                <input matInput [value]="search()" (input)="onSearch($any($event.target).value)"
+                       [matAutocomplete]="picker" placeholder="Name, title or code" />
+                <mat-autocomplete #picker [displayWith]="displayNothing" (optionSelected)="choose($event)">
+                  @for (c of candidates.value() ?? []; track c.id) {
+                    <mat-option [value]="c">
+                      {{ c.fullName }} <span class="muted">· {{ c.jobTitle }} · {{ c.code }}</span>
+                    </mat-option>
+                  } @empty {
+                    <mat-option disabled>No eligible managers match</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              @if (r.manager) {
+                <button mat-button (click)="remove()">Remove manager</button>
+              }
+            </div>
+            <p class="muted">Only people who can manage {{ employee().fullName }} under ACME's reporting rules are listed.</p>
+          }
+        </div>
+
+        <div>
+          <div class="label">Direct reports</div>
+          @for (report of r.directReports; track report.id) {
+            <a class="report" [routerLink]="['/employees', report.id]">
+              {{ report.fullName }}
+              <span class="muted">· {{ report.jobTitle }}{{ report.active ? '' : ' · inactive' }}</span>
+            </a>
+          } @empty {
+            <div class="muted">None</div>
+          }
+        </div>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
