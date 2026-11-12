@@ -1,4 +1,4 @@
-import { PayStatsRow } from '../core/models';
+import { PayStatsRow } from '../../models';
 import { groupByCurrency, percentOf } from './pay-stats';
 
 function row(group: string, currency: string, headcount: number, max: number, total: number): PayStatsRow {

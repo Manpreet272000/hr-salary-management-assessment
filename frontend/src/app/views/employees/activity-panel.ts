@@ -3,8 +3,8 @@ import { Component, inject, input, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { HumanizePipe } from '../core/format';
-import { HrApi } from '../core/hr-api';
+import { HumanizePipe } from '../../shared/format';
+import { AuditService } from '../../services/audit.service';
 
 /** The employee's audit trail: every change to profile, status, manager, pay and leave, newest first. */
 @Component({
@@ -61,7 +61,7 @@ import { HrApi } from '../core/hr-api';
   `,
 })
 export class ActivityPanel {
-  private readonly api = inject(HrApi);
+  private readonly auditService = inject(AuditService);
 
   readonly employeeId = input.required<number>();
   /** Bumped by the parent after any change, so the newest entries appear. */
@@ -70,7 +70,7 @@ export class ActivityPanel {
   protected readonly page = signal({ page: 0, size: 10 });
   protected readonly activity = rxResource({
     params: () => ({ employeeId: this.employeeId(), page: this.page(), key: this.refreshKey() }),
-    stream: ({ params }) => this.api.audit({ employeeId: params.employeeId }, params.page),
+    stream: ({ params }) => this.auditService.search({ employeeId: params.employeeId }, params.page),
   });
 
   protected onPage(event: PageEvent): void {

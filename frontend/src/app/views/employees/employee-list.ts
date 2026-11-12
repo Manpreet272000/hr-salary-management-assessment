@@ -14,10 +14,10 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { debounceTime, map } from 'rxjs';
-import { HumanizePipe, MoneyPipe } from '../core/format';
-import { HrApi } from '../core/hr-api';
-import { MetaStore } from '../core/meta-store';
-import { Employee, EmployeeFilters } from '../core/models';
+import { HumanizePipe, MoneyPipe } from '../../shared/format';
+import { EmployeeService } from '../../services/employee.service';
+import { MetaService } from '../../services/meta.service';
+import { Employee, EmployeeFilters } from '../../models';
 import { EmployeeFormDialog } from './employee-form-dialog';
 
 type StatusFilter = 'active' | 'inactive' | 'all';
@@ -34,10 +34,10 @@ type StatusFilter = 'active' | 'inactive' | 'all';
   styleUrl: './employee-list.scss',
 })
 export class EmployeeList {
-  private readonly api = inject(HrApi);
+  private readonly employeeService = inject(EmployeeService);
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
-  protected readonly meta = inject(MetaStore);
+  protected readonly meta = inject(MetaService);
 
   protected readonly columns = ['code', 'name', 'department', 'employmentType', 'country', 'monthlyGross', 'status'];
 
@@ -55,7 +55,7 @@ export class EmployeeList {
 
   protected readonly employees = rxResource({
     params: () => ({ filters: this.filters(), page: { ...this.page(), sort: this.sort() } }),
-    stream: ({ params }) => this.api.searchEmployees(params.filters, params.page),
+    stream: ({ params }) => this.employeeService.search(params.filters, params.page),
   });
 
   constructor() {

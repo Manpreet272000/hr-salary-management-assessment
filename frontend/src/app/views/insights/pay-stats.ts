@@ -1,4 +1,4 @@
-import { PayStatsRow } from '../core/models';
+import { PayStatsRow } from '../../models';
 
 export interface CurrencySection {
   currency: string;

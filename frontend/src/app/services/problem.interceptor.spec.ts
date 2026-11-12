@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { problemMessage } from './problem-interceptor';
+import { problemMessage } from './problem.interceptor';
 
 describe('problemMessage', () => {
   it('shows the problem detail from the backend', () => {

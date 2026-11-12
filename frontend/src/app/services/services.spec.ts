@@ -1,22 +1,25 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { HrApi, toParams } from './hr-api';
+import { toParams } from '../shared/http-params';
+import { CompensationService } from './compensation.service';
+import { EmployeeService } from './employee.service';
+import { PayrollService } from './payroll.service';
 
-describe('HrApi', () => {
-  let api: HrApi;
+describe('HTTP services', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
-    api = TestBed.inject(HrApi);
     http = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => http.verify());
 
-  it('sends only the filters that are set when searching employees', () => {
-    api.searchEmployees({ department: 'SALES', active: false, query: undefined }, { page: 2, size: 25, sort: 'fullName,asc' }).subscribe();
+  it('sends only the employee filters that are set', () => {
+    TestBed.inject(EmployeeService)
+      .search({ department: 'SALES', active: false, query: undefined }, { page: 2, size: 25, sort: 'fullName,asc' })
+      .subscribe();
 
     const req = http.expectOne((r) => r.url === '/api/employees');
     expect(req.request.params.keys().sort()).toEqual(['active', 'department', 'page', 'size', 'sort']);
@@ -25,7 +28,7 @@ describe('HrApi', () => {
   });
 
   it('revises pay with a PUT to the pay type', () => {
-    api.revisePay(7, 'INCENTIVE', 1500).subscribe();
+    TestBed.inject(CompensationService).revise(7, 'INCENTIVE', 1500).subscribe();
 
     const req = http.expectOne('/api/employees/7/compensation/INCENTIVE');
     expect(req.request.method).toBe('PUT');
@@ -34,7 +37,7 @@ describe('HrApi', () => {
   });
 
   it('asks for the pay estimate of a specific month', () => {
-    api.payEstimate(7, '2026-11').subscribe();
+    TestBed.inject(PayrollService).estimate(7, '2026-11').subscribe();
 
     http.expectOne('/api/employees/7/pay-estimate?month=2026-11').flush({});
   });

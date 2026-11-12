@@ -9,9 +9,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
-import { HumanizePipe } from '../core/format';
-import { HrApi } from '../core/hr-api';
-import { Employee, EmployeeRef } from '../core/models';
+import { HumanizePipe } from '../../shared/format';
+import { ReportingService } from '../../services/reporting.service';
+import { Employee, EmployeeRef } from '../../models';
 
 /**
  * Who the employee reports to (and the chain above), who reports to them, and changing the manager.
@@ -24,7 +24,7 @@ import { Employee, EmployeeRef } from '../core/models';
   styleUrl: './detail-panels.scss',
 })
 export class ReportingPanel {
-  private readonly api = inject(HrApi);
+  private readonly reportingService = inject(ReportingService);
 
   readonly employee = input.required<Employee>();
   readonly refreshKey = input(0);
@@ -36,11 +36,11 @@ export class ReportingPanel {
 
   protected readonly reporting = rxResource({
     params: () => ({ id: this.employee().id, key: this.refreshKey() }),
-    stream: ({ params }) => this.api.reporting(params.id),
+    stream: ({ params }) => this.reportingService.get(params.id),
   });
   protected readonly candidates = rxResource({
     params: () => (this.employee().active ? { id: this.employee().id, query: this.debouncedSearch() } : undefined),
-    stream: ({ params }) => this.api.managerCandidates(params.id, params.query),
+    stream: ({ params }) => this.reportingService.managerCandidates(params.id, params.query),
   });
 
   protected displayNothing = (): string => '';
@@ -59,7 +59,7 @@ export class ReportingPanel {
   }
 
   private assign(managerId: number | null): void {
-    this.api.setManager(this.employee().id, managerId).subscribe((updated) => {
+    this.reportingService.setManager(this.employee().id, managerId).subscribe((updated) => {
       this.reporting.set(updated);
       this.changed.emit();
     });

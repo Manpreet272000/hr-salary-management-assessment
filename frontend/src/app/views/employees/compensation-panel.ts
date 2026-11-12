@@ -8,9 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { Observable } from 'rxjs';
-import { HumanizePipe, MoneyPipe } from '../core/format';
-import { HrApi } from '../core/hr-api';
-import { Compensation, Employee } from '../core/models';
+import { HumanizePipe, MoneyPipe } from '../../shared/format';
+import { CompensationService } from '../../services/compensation.service';
+import { Compensation, Employee } from '../../models';
 
 const PAY_TYPE_HINTS: Record<string, string> = {
   REGULAR: 'Fixed monthly salary. Reduced pro rata for unplanned leave.',
@@ -26,7 +26,7 @@ const PAY_TYPE_HINTS: Record<string, string> = {
   styleUrl: './detail-panels.scss',
 })
 export class CompensationPanel {
-  private readonly api = inject(HrApi);
+  private readonly compensationService = inject(CompensationService);
 
   readonly employee = input.required<Employee>();
   /** Bumped by the parent when something outside this panel may have changed pay (e.g. a profile edit). */
@@ -41,11 +41,11 @@ export class CompensationPanel {
 
   protected readonly compensation = rxResource({
     params: () => ({ id: this.employee().id, key: this.refreshKey() }),
-    stream: ({ params }) => this.api.compensation(params.id),
+    stream: ({ params }) => this.compensationService.get(params.id),
   });
   protected readonly history = rxResource({
     params: () => ({ id: this.employee().id, key: this.refreshKey() }),
-    stream: ({ params }) => this.api.payHistory(params.id),
+    stream: ({ params }) => this.compensationService.history(params.id),
   });
 
   /** One row per pay type the employee may receive, with its current amount if set. */
@@ -72,12 +72,12 @@ export class CompensationPanel {
   protected revise(payType: string): void {
     const amount = this.drafts()[payType];
     if (amount != null && amount > 0) {
-      this.run(this.api.revisePay(this.employee().id, payType, amount), payType);
+      this.run(this.compensationService.revise(this.employee().id, payType, amount), payType);
     }
   }
 
   protected end(payType: string): void {
-    this.run(this.api.endPay(this.employee().id, payType), payType);
+    this.run(this.compensationService.end(this.employee().id, payType), payType);
   }
 
   private run(request: Observable<Compensation>, payType: string): void {

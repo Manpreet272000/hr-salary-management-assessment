@@ -5,10 +5,10 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { HumanizePipe } from '../core/format';
-import { HrApi } from '../core/hr-api';
-import { MetaStore } from '../core/meta-store';
-import { Employee, EmployeeProfile } from '../core/models';
+import { HumanizePipe } from '../../shared/format';
+import { EmployeeService } from '../../services/employee.service';
+import { MetaService } from '../../services/meta.service';
+import { Employee, EmployeeProfile } from '../../models';
 
 /** Creates an employee, or edits one when an employee is passed as dialog data. Closes with the saved employee. */
 @Component({
@@ -69,9 +69,9 @@ import { Employee, EmployeeProfile } from '../core/models';
   `,
 })
 export class EmployeeFormDialog {
-  private readonly api = inject(HrApi);
+  private readonly employeeService = inject(EmployeeService);
   private readonly dialogRef = inject<MatDialogRef<EmployeeFormDialog, Employee>>(MatDialogRef);
-  protected readonly meta = inject(MetaStore);
+  protected readonly meta = inject(MetaService);
   protected readonly existing = inject<Employee | null>(MAT_DIALOG_DATA, { optional: true });
   protected saving = false;
 
@@ -96,8 +96,8 @@ export class EmployeeFormDialog {
     const profile: EmployeeProfile = this.form.getRawValue();
     this.saving = true;
     const request = this.existing
-      ? this.api.updateEmployee(this.existing.id, profile)
-      : this.api.createEmployee(profile);
+      ? this.employeeService.update(this.existing.id, profile)
+      : this.employeeService.create(profile);
     request.subscribe({
       next: (saved) => this.dialogRef.close(saved),
       error: () => (this.saving = false),

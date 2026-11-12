@@ -1,8 +1,8 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Employee, PayEstimate } from '../core/models';
-import { toMonth } from '../core/months';
+import { Employee, PayEstimate } from '../../models';
+import { toMonth } from '../../shared/months';
 import { PayEstimatePanel } from './pay-estimate-panel';
 
 const employee: Employee = {

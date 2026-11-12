@@ -5,11 +5,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { HumanizePipe, MoneyPipe } from '../core/format';
-import { HrApi } from '../core/hr-api';
-import { MetaStore } from '../core/meta-store';
-import { Employee, LeaveSummary } from '../core/models';
-import { toMonth } from '../core/months';
+import { HumanizePipe, MoneyPipe } from '../../shared/format';
+import { AttendanceService } from '../../services/attendance.service';
+import { PayrollService } from '../../services/payroll.service';
+import { MetaService } from '../../services/meta.service';
+import { Employee, LeaveSummary } from '../../models';
+import { toMonth } from '../../shared/months';
 
 /**
  * Records a month's leave and shows the resulting net payout estimate. The leave fields come from
@@ -22,8 +23,9 @@ import { toMonth } from '../core/months';
   styleUrl: './detail-panels.scss',
 })
 export class PayEstimatePanel {
-  private readonly api = inject(HrApi);
-  protected readonly meta = inject(MetaStore);
+  private readonly attendanceService = inject(AttendanceService);
+  private readonly payrollService = inject(PayrollService);
+  protected readonly meta = inject(MetaService);
 
   readonly employee = input.required<Employee>();
   /** Bumped by the parent when pay changed, so the estimate is recalculated. */
@@ -41,13 +43,13 @@ export class PayEstimatePanel {
   /** Inactive employees are not paid, so nothing is requested for them (params undefined = idle). */
   protected readonly attendance = rxResource({
     params: () => (this.employee().active ? { id: this.employee().id, month: this.month() } : undefined),
-    stream: ({ params }) => this.api.attendance(params.id, params.month),
+    stream: ({ params }) => this.attendanceService.get(params.id, params.month),
   });
   protected readonly estimate = rxResource({
     params: () => this.employee().active
       ? { id: this.employee().id, month: this.month(), pay: this.refreshKey(), leave: this.savedLeaveVersion() }
       : undefined,
-    stream: ({ params }) => this.api.payEstimate(params.id, params.month),
+    stream: ({ params }) => this.payrollService.estimate(params.id, params.month),
   });
 
   constructor() {
@@ -78,7 +80,7 @@ export class PayEstimatePanel {
       return;
     }
     const leaves: LeaveSummary = this.leaveForm.getRawValue();
-    this.api.recordAttendance(this.employee().id, this.month(), leaves).subscribe((saved) => {
+    this.attendanceService.record(this.employee().id, this.month(), leaves).subscribe((saved) => {
       this.attendance.set(saved);
       this.savedLeaveVersion.update((v) => v + 1);
       this.changed.emit();

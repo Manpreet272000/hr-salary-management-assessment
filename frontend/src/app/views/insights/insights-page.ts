@@ -5,9 +5,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { HumanizePipe, MoneyPipe } from '../core/format';
-import { HrApi } from '../core/hr-api';
-import { MetaStore } from '../core/meta-store';
+import { HumanizePipe, MoneyPipe } from '../../shared/format';
+import { InsightsService } from '../../services/insights.service';
+import { MetaService } from '../../services/meta.service';
 import { groupByCurrency, percentOf } from './pay-stats';
 
 /** "How does the org pay people?": headcount and pay distribution by a chosen dimension. */
@@ -18,19 +18,19 @@ import { groupByCurrency, percentOf } from './pay-stats';
   styleUrl: './insights-page.scss',
 })
 export class InsightsPage {
-  private readonly api = inject(HrApi);
-  protected readonly meta = inject(MetaStore);
+  private readonly insightsService = inject(InsightsService);
+  protected readonly meta = inject(MetaService);
 
   protected readonly groupBy = signal('DEPARTMENT');
   protected readonly country = signal('');
 
   protected readonly headcount = rxResource({
     params: () => this.groupBy(),
-    stream: ({ params }) => this.api.headcount(params),
+    stream: ({ params }) => this.insightsService.headcount(params),
   });
   protected readonly payStats = rxResource({
     params: () => ({ groupBy: this.groupBy(), country: this.country() || undefined }),
-    stream: ({ params }) => this.api.payStats(params.groupBy, params.country),
+    stream: ({ params }) => this.insightsService.payStats(params.groupBy, params.country),
   });
 
   protected readonly totals = computed(() => {

@@ -1,11 +1,12 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { HrApi } from './hr-api';
+import { Meta } from '../models';
 
-/** Reference data loaded once per session and shared by every screen. */
+/** Reference data (departments, countries, leave types…) loaded once and shared by every view. Backed by MetaController. */
 @Injectable({ providedIn: 'root' })
-export class MetaStore {
-  readonly meta = toSignal(inject(HrApi).meta());
+export class MetaService {
+  readonly meta = toSignal(inject(HttpClient).get<Meta>('/api/meta'));
 
   readonly departments = computed(() => this.meta()?.departments ?? []);
   readonly employmentTypes = computed(() => this.meta()?.employmentTypes ?? []);

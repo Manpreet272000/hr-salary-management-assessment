@@ -6,10 +6,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
-import { HumanizePipe, MoneyPipe } from '../core/format';
-import { HrApi } from '../core/hr-api';
-import { MetaStore } from '../core/meta-store';
-import { Employee } from '../core/models';
+import { HumanizePipe, MoneyPipe } from '../../shared/format';
+import { EmployeeService } from '../../services/employee.service';
+import { MetaService } from '../../services/meta.service';
+import { Employee } from '../../models';
 import { CompensationPanel } from './compensation-panel';
 import { EmployeeFormDialog } from './employee-form-dialog';
 import { ActivityPanel } from './activity-panel';
@@ -24,16 +24,16 @@ import { ReportingPanel } from './reporting-panel';
   styleUrl: './employee-detail.scss',
 })
 export class EmployeeDetail {
-  private readonly api = inject(HrApi);
+  private readonly employeeService = inject(EmployeeService);
   private readonly dialog = inject(MatDialog);
-  protected readonly meta = inject(MetaStore);
+  protected readonly meta = inject(MetaService);
 
   /** Bound from the `:id` route parameter. */
   readonly id = input.required({ transform: numberAttribute });
 
   protected readonly employee = rxResource({
     params: () => this.id(),
-    stream: ({ params }) => this.api.employee(params),
+    stream: ({ params }) => this.employeeService.get(params),
   });
   /** Incremented after any change to this employee, so dependent panels (pay, estimate, activity) reload. */
   protected readonly payVersion = signal(0);
@@ -52,7 +52,7 @@ export class EmployeeDetail {
   }
 
   protected toggleActive(employee: Employee): void {
-    this.api.setActive(employee.id, !employee.active).subscribe((saved) => {
+    this.employeeService.setActive(employee.id, !employee.active).subscribe((saved) => {
       this.employee.set(saved);
       this.payVersion.update((v) => v + 1);
     });
